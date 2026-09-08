@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#16120E">
+<title>Escuta Cega · votação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --papel:#EDEBE4; --papel-2:#F7F6F2; --branco:#fff;
+  --tinta:#16120E; --tinta-2:#6A635A; --tinta-3:#9B948A;
+  --linha:rgba(22,18,14,.13);
+  --vermelho:#9A0A05; --manteiga:#EAD577;
+  --n1:#7C0804; --n2:#A8291B; --n3:#C9762B; --n4:#DDB03F; --n5:#E3CB5F;
+  --ft:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --fi:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --e:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{height:100%; margin:0}
+body{
+  background:var(--papel); color:var(--tinta); font-family:var(--fi); font-size:16px;
+  -webkit-font-smoothing:antialiased; overflow:hidden; overscroll-behavior:none;
+}
+button{font:inherit; color:inherit; border:0; background:none; cursor:pointer}
+:focus-visible{outline:2px solid var(--tinta); outline-offset:2px}
+.rot{font-size:10.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--tinta-3)}
+
+.tela{
+  height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr) auto;
+  padding:max(12px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+  gap:12px;
+}
+.topo{display:flex; align-items:center; gap:10px}
+.topo .marca{font-family:var(--ft); font-weight:900; font-size:15px; letter-spacing:-.035em}
+.topo .dir{margin-left:auto; display:flex; align-items:center; gap:7px}
+.ponto{width:8px; height:8px; border-radius:50%; background:var(--tinta-3); transition:background .3s}
+.ponto.on{background:#3F8F4E; animation:bat 1.8s var(--e) infinite}
+@keyframes bat{0%,100%{transform:scale(1); opacity:1} 50%{transform:scale(1.5); opacity:.5}}
+.cod{font-family:var(--ft); font-weight:800; font-size:12px; letter-spacing:.16em; color:var(--tinta-2)}
+
+.vista{display:none; min-height:0; flex-direction:column}
+.vista.on{display:flex; flex:1; min-height:0; animation:entra .42s var(--e)}
+@keyframes entra{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+
+/* ---- espera ---- */
+.centro{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; padding:20px}
+.centro h1{font-family:var(--ft); font-weight:900; font-size:clamp(28px,8vw,40px); letter-spacing:-.045em; margin:0; line-height:1.02; text-wrap:balance}
+.centro p{margin:0; color:var(--tinta-2); max-width:30ch; line-height:1.5; font-size:15px}
+.pulso{width:74px; height:74px; border-radius:50%; background:var(--branco); border:1px solid var(--linha); display:grid; place-items:center; position:relative}
+.pulso svg{width:30px; height:30px; fill:var(--vermelho)}
+.pulso::after{content:""; position:absolute; inset:0; border-radius:50%; border:2px solid var(--vermelho); animation:onda 2.4s var(--e) infinite}
+@keyframes onda{0%{transform:scale(1); opacity:.45} 100%{transform:scale(1.7); opacity:0}}
+
+/* ---- votação ---- */
+.pergunta{padding:2px 2px 4px}
+.pergunta b{display:block; font-family:var(--ft); font-weight:900; font-size:clamp(22px,6.4vw,30px); letter-spacing:-.04em; line-height:1.05}
+.pergunta span{font-size:13px; color:var(--tinta-2)}
+.opcoes{flex:1; display:grid; grid-template-rows:repeat(5,1fr); gap:9px; min-height:0; margin-top:10px}
+.op{
+  display:grid; grid-template-columns:46px 1fr auto; align-items:center; gap:14px;
+  border-radius:15px; padding:0 18px; color:#fff; text-align:left;
+  transition:transform .22s var(--e), box-shadow .22s var(--e), opacity .22s;
+  box-shadow:0 3px 0 rgba(0,0,0,.16);
+}
+.op:active{transform:translateY(3px); box-shadow:0 0 0 rgba(0,0,0,.16)}
+.op .forma{width:34px; height:34px; display:grid; place-items:center}
+.op .forma svg{width:26px; height:26px; fill:#fff; opacity:.95}
+.op .txt b{display:block; font-family:var(--ft); font-weight:900; font-size:20px; letter-spacing:-.03em; line-height:1.1}
+.op .txt span{font-size:12.5px; opacity:.82}
+.op .num{font-family:var(--ft); font-weight:900; font-size:30px; opacity:.42; letter-spacing:-.04em}
+.op.escura{color:var(--tinta)}
+.op.escura svg{fill:var(--tinta)}
+.op[data-sel="1"]{box-shadow:0 0 0 3px var(--tinta), 0 3px 0 rgba(0,0,0,.16)}
+.op[data-off="1"]{opacity:.4}
+
+/* ---- enviado ---- */
+.enviado{flex:1; border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:#fff; text-align:center; padding:24px}
+.enviado .grande{font-family:var(--ft); font-weight:900; font-size:clamp(72px,26vw,128px); line-height:.82; letter-spacing:-.06em}
+.enviado h2{font-family:var(--ft); font-weight:900; font-size:26px; letter-spacing:-.035em; margin:0}
+.enviado p{margin:0; opacity:.85; font-size:14.5px; max-width:26ch; line-height:1.45}
+.enviado.escura{color:var(--tinta)}
+.tique{width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.22); display:grid; place-items:center; animation:pop .5s var(--e)}
+.tique svg{width:24px; height:24px; stroke:currentColor; stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.enviado.escura .tique{background:rgba(22,18,14,.14)}
+@keyframes pop{0%{transform:scale(.6); opacity:0} 60%{transform:scale(1.12)} 100%{transform:scale(1); opacity:1}}
+
+/* ---- resultado ---- */
+.res-caixa{flex:1; display:flex; flex-direction:column; gap:14px; justify-content:center}
+.painel{background:var(--papel-2); border:1px solid var(--linha); border-radius:18px; padding:20px}
+.painel .num{font-family:var(--ft); font-weight:900; font-size:56px; letter-spacing:-.055em; line-height:.9; font-variant-numeric:tabular-nums}
+.painel .num small{font-size:.3em; color:var(--tinta-3)}
+.dupla{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.veredito{border-radius:14px; padding:14px 16px; font-size:14.5px; font-weight:600; line-height:1.4}
+.veredito.igual{background:var(--vermelho); color:#fff}
+.veredito.dif{background:var(--branco); border:1px solid var(--linha); color:var(--tinta-2)}
+
+/* ---- entrada de sala ---- */
+.entrada{flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; padding:16px}
+.entrada input{
+  width:100%; height:64px; border-radius:16px; border:1px solid var(--linha); background:var(--branco);
+  font-family:var(--ft); font-weight:900; font-size:30px; letter-spacing:.3em; text-align:center;
+  text-transform:uppercase; color:var(--tinta);
+}
+.botao{
+  height:54px; border-radius:99px; background:var(--vermelho); color:#fff;
+  font-family:var(--ft); font-weight:800; font-size:16px; width:100%;
+}
+.rodape{text-align:center}
+</style>
+</head>
+<body>
+<div class="tela">
+  <header class="topo">
+    <span class="marca">Escuta Cega</span>
+    <div class="dir"><span class="cod" id="cod"></span><i class="ponto" id="ponto"></i></div>
+  </header>
+
+  <main style="min-height:0; display:flex; flex-direction:column">
+
+    <section class="vista on" id="v-entrada">
+      <div class="entrada">
+        <div style="text-align:center">
+          <p class="rot">Código da sala</p>
+          <h1 style="font-family:var(--ft); font-weight:900; font-size:30px; letter-spacing:-.04em; margin:6px 0 14px">Digite o código<br>que está no telão</h1>
+        </div>
+        <input id="in-sala" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD">
+        <button class="botao" id="btn-entrar">Entrar</button>
+      </div>
+    </section>
+
+    <section class="vista" id="v-espera">
+      <div class="centro">
+        <div class="pulso"><svg viewBox="0 0 24 24"><path d="M6.6 2.9 3.1 6.4c-.6.6-.8 1.6-.4 2.4 1.5 3.3 4.2 6 7.5 7.5.8.4 1.8.2 2.4-.4l3.5-3.5-4.2-2.6-1.7 1.7c-1.4-.9-2.6-2.1-3.5-3.5l1.7-1.7L6.6 2.9Z"/></svg></div>
+        <h1 id="e-titulo">Conectando</h1>
+        <p id="e-texto">Segure firme, já já a votação abre.</p>
+      </div>
+    </section>
+
+    <section class="vista" id="v-votar">
+      <div class="pergunta">
+        <span class="rot" id="p-num">Ligação</span>
+        <b id="p-titulo">.</b>
+        <span id="p-sub">Que nota essa ligação merece?</span>
+      </div>
+      <div class="opcoes" id="opcoes"></div>
+    </section>
+
+    <section class="vista" id="v-enviado">
+      <div class="enviado" id="cx-enviado">
+        <div class="tique"><svg viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5"/></svg></div>
+        <span class="grande" id="en-num">3</span>
+        <h2 id="en-rot">Mediana</h2>
+        <p>Voto registrado. Dá para trocar até a sala revelar.</p>
+      </div>
+    </section>
+
+    <section class="vista" id="v-res">
+      <div class="res-caixa">
+        <div class="painel">
+          <p class="rot">Média da sala</p>
+          <div class="num" id="r-media">0,0<small>/5</small></div>
+        </div>
+        <div class="dupla">
+          <div class="painel"><p class="rot">Seu voto</p><div class="num" id="r-seu" style="font-size:40px">–</div></div>
+          <div class="painel"><p class="rot">Nota do grupo</p><div class="num" id="r-ref" style="font-size:40px">–</div></div>
+        </div>
+        <div class="veredito dif" id="r-vered">Aguardando a revelação no telão.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="rodape"><span class="rot" id="pe">Marketing de Relacionamento · Grupo 2</span></footer>
+</div>
+
+<script src="lib/mqtt.min.js"></script>
+<script>
+const BROKERS = ["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+const CORES = ["#7C0804","#A8291B","#C9762B","#DDB03F","#E3CB5F"];
+const NOMES = ["Péssima","Ruim","Mediana","Boa","Excelente"];
+const ESCURA = [false,false,false,true,true];
+const FORMAS = [
+  '<svg viewBox="0 0 24 24"><path d="M12 3 22 21H2z"/></svg>',
+  '<svg viewBox="0 0 24 24"><path d="M12 2 22 12 12 22 2 12z"/></svg>',
+  '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>',
+  '<svg viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="3"/></svg>',
+  '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg>'
+];
+
+const $ = (s)=>document.querySelector(s);
+const P = new URLSearchParams(location.search);
+let sala = (P.get("s")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+let cli = null, estado = null, meuVoto = {}, ligAtual = -1;
+
+const eu = (()=>{
+  let v = null;
+  try{ v = localStorage.getItem("ec-id"); if(!v){ v = "p"+Math.random().toString(36).slice(2,10); localStorage.setItem("ec-id", v);} }
+  catch(e){ v = "p"+Math.random().toString(36).slice(2,10); }
+  return v;
+})();
+
+function vista(id){
+  document.querySelectorAll(".vista").forEach(v=> v.classList.remove("on"));
+  $("#v-"+id).classList.add("on");
+}
+
+/* ---- opções ---- */
+function montar(){
+  const box = $("#opcoes"); box.innerHTML = "";
+  for(let n=1;n<=5;n++){
+    const b = document.createElement("button");
+    b.className = "op" + (ESCURA[n-1] ? " escura" : "");
+    b.style.background = CORES[n-1];
+    b.dataset.n = n;
+    b.innerHTML = '<span class="forma">'+FORMAS[n-1]+'</span>'+
+      '<span class="txt"><b>'+NOMES[n-1]+'</b><span>'+textoAjuda(n)+'</span></span>'+
+      '<span class="num">'+n+'</span>';
+    b.addEventListener("click", ()=> votar(n));
+    box.appendChild(b);
+  }
+}
+function textoAjuda(n){
+  return ["Não deveria ter acontecido","Fez errado mais do que certo","Cumpriu o básico, sem brilho","Resolveu bem, com um deslize","Do jeito que se ensina"][n-1];
+}
+
+function votar(n){
+  if(!cli || ligAtual < 0) return;
+  meuVoto[ligAtual] = n;
+  cli.publish("tmk/"+sala+"/voto", JSON.stringify({id:eu, lig:ligAtual, nota:n}), {qos:0});
+  if(navigator.vibrate) navigator.vibrate(18);
+  const cx = $("#cx-enviado");
+  cx.style.background = CORES[n-1];
+  cx.classList.toggle("escura", ESCURA[n-1]);
+  $("#en-num").textContent = n;
+  $("#en-rot").textContent = NOMES[n-1];
+  vista("enviado");
+  setTimeout(()=>{ if(estado && estado.fase==="votar") pintar(); }, 1900);
+}
+
+/* ---- estado vindo do telão ---- */
+function pintar(){
+  if(!estado){ vista("espera"); return; }
+  ligAtual = estado.lig;
+  $("#p-num").textContent = "Ligação " + String(estado.lig+1).padStart(2,"0");
+  $("#p-titulo").textContent = estado.curto;
+
+  if(estado.fase === "votar"){
+    montarSelecao();
+    vista("votar");
+  }else if(estado.fase === "res" || estado.fase === "final"){
+    const m = (estado.media||0).toFixed(1).replace(".",",");
+    $("#r-media").innerHTML = m + "<small>/5</small>";
+    const meu = meuVoto[estado.lig];
+    $("#r-seu").textContent = meu || "–";
+    $("#r-ref").textContent = estado.ref || "–";
+    const v = $("#r-vered");
+    if(meu && estado.ref){
+      const d = Math.abs(meu - estado.ref);
+      v.className = "veredito " + (d===0 ? "igual" : "dif");
+      v.textContent = d===0 ? "Você deu a mesma nota que o grupo."
+        : d===1 ? "Perto da leitura do grupo, um ponto de diferença."
+        : "Você viu essa ligação bem diferente do grupo. Boa hora de abrir o debate.";
+    }else{
+      v.className = "veredito dif";
+      v.textContent = "Resultado no telão.";
+    }
+    vista("res");
+  }else if(estado.fase === "ouvir"){
+    $("#e-titulo").textContent = estado.curto;
+    $("#e-texto").textContent = "Escute a ligação no telão. A votação abre quando acabar.";
+    vista("espera");
+  }else{
+    $("#e-titulo").textContent = "Tudo pronto";
+    $("#e-texto").textContent = "Aguardando a primeira ligação começar.";
+    vista("espera");
+  }
+}
+function montarSelecao(){
+  document.querySelectorAll(".op").forEach(b=>{
+    b.dataset.sel = (meuVoto[ligAtual] === Number(b.dataset.n)) ? "1" : "0";
+  });
+}
+
+/* ---- conexão ---- */
+function conectar(k){
+  if(k >= BROKERS.length){
+    $("#e-titulo").textContent = "Sem conexão";
+    $("#e-texto").textContent = "A rede da sala bloqueou a conexão. Avise quem está no telão.";
+    vista("espera");
+    return;
+  }
+  let ok = false;
+  const c = mqtt.connect(BROKERS[k], {clientId:"v-"+eu+"-"+Math.random().toString(16).slice(2,6), clean:true, connectTimeout:6000, reconnectPeriod:4000});
+  cli = c;
+  c.on("connect", ()=>{
+    ok = true;
+    $("#ponto").classList.add("on");
+    c.subscribe("tmk/"+sala+"/estado", {qos:0});
+    if(!estado){ $("#e-titulo").textContent = "Conectado"; $("#e-texto").textContent = "Aguardando a sala começar."; vista("espera"); }
+  });
+  c.on("message", (t, carga)=>{
+    try{
+      const novo = JSON.parse(carga.toString());
+      const mudouLig = !estado || estado.lig !== novo.lig;
+      estado = novo;
+      if(mudouLig && meuVoto[novo.lig] === undefined) { /* nova ligação, sem voto ainda */ }
+      pintar();
+    }catch(e){}
+  });
+  c.on("close", ()=> $("#ponto").classList.remove("on"));
+  c.on("error", ()=>{ if(!ok){ try{c.end(true);}catch(e){} setTimeout(()=>conectar(k+1), 200); } });
+  setTimeout(()=>{ if(!ok){ try{c.end(true);}catch(e){} conectar(k+1); } }, 7000);
+}
+
+/* ---- início ---- */
+montar();
+$("#btn-entrar").addEventListener("click", ()=>{
+  const v = $("#in-sala").value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+  if(v.length !== 4) return;
+  location.search = "?s=" + v;
+});
+$("#in-sala").addEventListener("keydown", e=>{ if(e.key === "Enter") $("#btn-entrar").click(); });
+
+if(sala.length === 4){
+  $("#cod").textContent = sala;
+  vista("espera");
+  conectar(0);
+}else{
+  vista("entrada");
+  setTimeout(()=> $("#in-sala").focus(), 300);
+}
+</script>
+</body>
+</html>
