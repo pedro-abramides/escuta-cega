@@ -274,7 +274,6 @@ button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
 }
 .am{width:15px; height:15px; border-radius:4px; display:inline-grid; place-items:center; flex:0 0 auto}
 .am.cheia{background:var(--n3)}
-.am.vazia{background:transparent; box-shadow:inset 0 0 0 2px var(--tinta)}
 .am.letra{background:var(--n4); color:#fff; font-family:var(--ft); font-weight:900; font-size:9.5px}
 .final-cab .acoes{margin-left:auto; display:flex; gap:10px}
 
@@ -323,11 +322,6 @@ button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
 .barra-cel.pico .v b{color:var(--tinta); font-weight:900; font-size:19px}
 .barra-cel.pico .v i{color:var(--tinta-2)}
 .barra-cel.zero .v b{color:var(--tinta-3); opacity:.55; font-weight:600; font-size:13px}
-.mc.refcel{box-shadow:inset 0 0 0 2px var(--tinta)}
-.mc.refcel::before{
-  content:"TIER DO GRUPO"; position:absolute; top:6px; left:7px; right:7px;
-  font-size:8.5px; font-weight:700; letter-spacing:.09em; color:var(--tinta); opacity:.65;
-}
 .mc{position:relative}
 
 /* ============ rodapé ============ */
@@ -532,7 +526,6 @@ button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
             <p><b>Leia na vertical.</b> Cada coluna é uma ligação e mostra como os votos dela se espalharam pelos cinco tiers. É a coluna que fecha em 100%, nunca a linha.</p>
             <ul class="legenda">
               <li><i class="am cheia"></i>tier mais votado da coluna</li>
-              <li><i class="am vazia"></i>tier que o grupo daria</li>
               <li><i class="am letra">B</i>tier final da ligação</li>
             </ul>
           </div>
@@ -959,7 +952,7 @@ function mostrarMatriz(){
       const q = x.cnt[n-1];
       const ehPico = x.picos.includes(n) && x.tot > 0;
       const cel = document.createElement("div");
-      cel.className = "mc" + (x.c.ref === n ? " refcel" : "");
+      cel.className = "mc";
       cel.innerHTML = '<div class="barra-cel' + (ehPico ? " pico" : "") + (q ? "" : " zero") + '">' +
         '<span class="v"><b>' + q + '</b>' + (x.tot && q ? '<i>' + Math.round(q/x.tot*100) + '%</i>' : '') + '</span>' +
         '<div class="bar" data-h="' + (x.tot ? q/x.max : 0) + '" style="background:' +
